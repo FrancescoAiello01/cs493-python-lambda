@@ -18,7 +18,11 @@ provider:
       Action:
         - 's3:ListBucket'
         - 's3:GetBucketLocation'
-      Resource: 'arn:aws:s3:::demo-s3-bucket-cs493-2'
+        - 's3:GetObject'
+        - 's3:*'
+      Resource:
+        - 'arn:aws:s3:::demo-s3-bucket-cs493-2'
+        - 'arn:aws:s3:::demo-s3-bucket-cs493-2/*'
 functions:
   app:
     handler: wsgi.handler
