@@ -1,16 +1,13 @@
 service: serverless-flask
-
 plugins:
   - serverless-python-requirements
   - serverless-wsgi
-
 custom:
   wsgi:
     app: app.app
     packRequirements: false
   pythonRequirements:
     dockerizePip: non-linux
-
 provider:
   name: aws
   runtime: python3.6
@@ -18,10 +15,10 @@ provider:
   region: us-east-1
   iamRoleStatements:
     - Effect: Allow
-    Action:
-      - s3:ListBucket
-    Resource: "arn:aws:s3:::demo-s3-bucket-cs493-2"
-
+      Action:
+        - 's3:ListBucket'
+        - 's3:GetBucketLocation'
+      Resource: 'arn:aws:s3:::demo-s3-bucket-cs493-2'
 functions:
   app:
     handler: wsgi.handler
