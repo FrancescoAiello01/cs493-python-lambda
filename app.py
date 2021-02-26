@@ -1,8 +1,10 @@
 from flask import Flask
+from flask_cors import CORS, cross_origin
 import boto3
 import json
 
 app = Flask(__name__)
+CORS(app, support_credentials=True)
 
 
 def add_to_music_dictionary(object_key, dictionary, signed_url):
@@ -26,6 +28,7 @@ def create_presigned_url(bucket_name, object_key, expiration, s3_client):
 
 
 @app.route("/")
+@cross_origin(supports_credentials=True)
 def get_music():
     s3_client = boto3.client("s3")
     s3 = boto3.resource("s3")
@@ -39,4 +42,12 @@ def get_music():
         signed_song_url = create_presigned_url(bucket.name, object_key, 500, s3_client)
         music = add_to_music_dictionary(object_key, music, signed_song_url)
 
-    return music
+    return {
+        "statusCode": 200,
+        "headers": {
+            "Access-Control-Allow-Headers": "Content-Type",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+        },
+        "body": json.dumps(music),
+    }

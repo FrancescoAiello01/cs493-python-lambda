@@ -16,10 +16,10 @@ provider:
   iamRoleStatements:
     - Effect: Allow
       Action:
+        - 's3:*'
         - 's3:ListBucket'
         - 's3:GetBucketLocation'
         - 's3:GetObject'
-        - 's3:*'
       Resource:
         - 'arn:aws:s3:::demo-s3-bucket-cs493-2'
         - 'arn:aws:s3:::demo-s3-bucket-cs493-2/*'
@@ -27,5 +27,7 @@ functions:
   app:
     handler: wsgi.handler
     events:
-      - http: ANY /
-      - http: 'ANY {proxy+}'
+      - http:
+          path: /
+          method: get
+          cors: true
