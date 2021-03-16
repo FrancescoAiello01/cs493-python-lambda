@@ -168,3 +168,20 @@ def get_song_url_from_name():
         song.append(item['s3_key']['S'])
     url = create_presigned_url("demo-s3-bucket-cs493-2", song[0], 500, s3_client)
     return url
+
+
+@app.route("/play", methods=["POST"])
+def play():
+    request_data = request.json
+    # Create SQS client
+    sqs = boto3.client('sqs')
+    queue_url = 'https://sqs.us-east-1.amazonaws.com/513502687153/music'
+    # Send message to SQS queue
+    response = sqs.send_message(
+        QueueUrl=queue_url,
+        DelaySeconds=10,
+        MessageBody=(
+            json.dumps(request_data)
+        )
+    )
+    return json.dumps(response)

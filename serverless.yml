@@ -20,13 +20,20 @@ provider:
         - 's3:GetBucketLocation'
         - 's3:GetObject'
         - dynamodb:Query
+        - 'SQS:*'
       Resource:
         - 'arn:aws:s3:::demo-s3-bucket-cs493-2'
         - 'arn:aws:s3:::demo-s3-bucket-cs493-2/*'
         - 'arn:aws:dynamodb:us-west-2:513502687153:table/music'
+        - 'arn:aws:sqs:us-east-1:513502687153:music'
 functions:
   app:
     handler: wsgi.handler
     events:
       - http: ANY /
       - http: 'ANY {proxy+}'
+  sqs:
+    handler: handler.logger
+    events:
+      - sqs: arn:aws:sqs:us-east-1:513502687153:music
+
