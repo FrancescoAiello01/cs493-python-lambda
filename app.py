@@ -1,10 +1,33 @@
 from flask import Flask, request
-# from flask_cors import CORS, cross_origin
+from flask_cors import CORS, cross_origin
 import boto3
 import json
+from firebase_admin import credentials, auth
+import firebase_admin
+from functools import wraps
+
 
 app = Flask(__name__)
-# CORS(app, support_credentials=True)
+CORS(app, support_credentials=True)
+
+#Connect to firebase
+cred = credentials.Certificate('fbAdminConfig.json')
+firebase = firebase_admin.initialize_app(cred)
+
+
+# wrapper that checks if user is authed
+def check_token(f):
+    @wraps(f)
+    def wrap(*args,**kwargs):
+        if not request.headers.get('authorization'):
+            return {'message': 'No token provided'},401
+        try:
+            user = auth.verify_id_token(request.headers['authorization'])
+            request.user = user
+        except:
+            return {'message':'Invalid token provided.'},401
+        return f(*args, **kwargs)
+    return wrap
 
 
 def add_to_music_dictionary(object_key, dictionary, signed_url):
@@ -27,7 +50,8 @@ def create_presigned_url(bucket_name, object_key, expiration, s3_client):
     )
 
 
-@app.route("/") # cross_origin(supports_credentials=True)
+cross_origin(supports_credentials=True)
+@app.route("/")
 def get_music():
     s3_client = boto3.client("s3")
     s3 = boto3.resource("s3")
@@ -41,16 +65,8 @@ def get_music():
         signed_song_url = create_presigned_url(bucket.name, object_key, 500, s3_client)
         music = add_to_music_dictionary(object_key, music, signed_song_url)
 
-    return music
-    # return {
-    #     "statusCode": 200,
-    #     "headers": {
-    #         "Access-Control-Allow-Headers": "Content-Type",
-    #         "Access-Control-Allow-Origin": "*",
-    #         "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
-    #     },
-    #     "body": json.dumps(music),
-    # }
+    return json.dumps(music)
+
 
 
 @app.route("/genres", methods=["GET"])
@@ -171,6 +187,7 @@ def get_song_url_from_name():
 
 
 @app.route("/play", methods=["POST"])
+@check_token
 def play():
     request_data = request.json
     # Create SQS client
@@ -185,3 +202,4 @@ def play():
         )
     )
     return json.dumps(response)
+
