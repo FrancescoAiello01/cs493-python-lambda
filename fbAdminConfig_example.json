@@ -1,0 +1,13 @@
+{
+    "type": "service_account",
+    "project_id": "fake",
+    "private_key_id": "fake",
+    "private_key": "fake",
+    "client_email": "fake",
+    "client_id": "fake",
+    "auth_uri": "fake",
+    "token_uri": "fake",
+    "auth_provider_x509_cert_url": "fake",
+    "client_x509_cert_url": "fake"
+  }
+  
