@@ -2,32 +2,10 @@ from flask import Flask, request
 from flask_cors import CORS, cross_origin
 import boto3
 import json
-from firebase_admin import credentials, auth
-import firebase_admin
-from functools import wraps
 
 
 app = Flask(__name__)
 CORS(app, support_credentials=True)
-
-#Connect to firebase
-cred = credentials.Certificate('fbAdminConfig.json')
-firebase = firebase_admin.initialize_app(cred)
-
-
-# wrapper that checks if user is authed
-def check_token(f):
-    @wraps(f)
-    def wrap(*args,**kwargs):
-        if not request.headers.get('authorization'):
-            return {'message': 'No token provided'},401
-        try:
-            user = auth.verify_id_token(request.headers['authorization'])
-            request.user = user
-        except:
-            return {'message':'Invalid token provided.'},401
-        return f(*args, **kwargs)
-    return wrap
 
 
 def add_to_music_dictionary(object_key, dictionary, signed_url):
@@ -51,7 +29,7 @@ def create_presigned_url(bucket_name, object_key, expiration, s3_client):
 
 
 cross_origin(supports_credentials=True)
-@app.route("/")
+@app.route("/music", methods=['GET', 'POST'])
 def get_music():
     s3_client = boto3.client("s3")
     s3 = boto3.resource("s3")
@@ -186,8 +164,8 @@ def get_song_url_from_name():
     return url
 
 
+cross_origin(supports_credentials=True)
 @app.route("/play", methods=["POST"])
-@check_token
 def play():
     request_data = request.json
     # Create SQS client
